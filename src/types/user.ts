@@ -1,4 +1,8 @@
 import { createSchema as S, TsjsonParser } from 'ts-json-validator';
+import { ErrorObject as JSONParseError } from 'ajv';
+
+import { Either, right, left } from 'utils/Either';
+
 
 export type User = {
   id: string;
@@ -16,6 +20,20 @@ const schema = S({
   required: ['id', 'name', 'iconUrl'],
 })
 
-export const parseUser = new TsjsonParser(schema);
+const userParser = new TsjsonParser(schema);
+export const parseUser = (str: string): Either<JSONParseError, User> => {
+  try {
+    return right(userParser.parse(str));
+  } catch (e) {
+    return left(e);
+  }
+};
 
-export const parseUsers = new TsjsonParser(S({ type: 'array', items: schema }))
+export const usersParser = new TsjsonParser(S({ type: 'array', items: schema }))
+export const parseUsers = (str: string): Either<JSONParseError, readonly User[]> => {
+  try {
+    return right(usersParser.parse(str));
+  } catch (e) {
+    return left(e);
+  }
+}
